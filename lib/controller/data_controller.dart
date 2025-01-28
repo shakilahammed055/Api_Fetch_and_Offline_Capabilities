@@ -21,13 +21,16 @@ class DataController extends GetxController {
       final response = await http
           .get(Uri.parse('https://jsonplaceholder.typicode.com/posts'));
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = json.decode(response.body) as List<dynamic>;
         dataList.value = data;
         await box.put('cachedData', data);
       }
     } catch (e) {
       if (box.containsKey('cachedData')) {
-        dataList.value = box.get('cachedData');
+        final cachedData = box.get('cachedData') as List<dynamic>;
+        dataList.value = cachedData
+            .map((item) => Map<String, dynamic>.from(item as Map))
+            .toList();
         Get.snackbar('Offline Mode', 'Displaying cached data.');
       } else {
         Get.snackbar('Error', 'No data available offline.');
